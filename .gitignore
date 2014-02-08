@@ -16,3 +16,11 @@
 *.exe
 *.out
 *.app
+
+.DS_Store
+
+build
+
+.dep
+
+cad/yamato/yamato.s#*
