@@ -7,6 +7,21 @@ ir_led_t const irLeds[] = {
 
 const uint8_t irLedCount = sizeof(irLeds) / sizeof(ir_led_t);
 
+/*
+
+_|        V        L
+  .---------------.
+  |R      T      R|
+  |               |
+  |               |
+ >|T             T|<
+  |               |
+  |               |
+  |R      T      R|
+_ '---------------' _
+ |        ^        |
+
+*/
 
 static void pwmCbPeriodIrLed(PWMDriver *pwmp) {
   (void)pwmp;
@@ -23,8 +38,8 @@ static void pwmCbActiveIrLedLeft(PWMDriver *pwmp) {
 
 
 static PWMConfig pwmConfig = {
-    1000000,                                    /* 76kHz PWM clock frequency.   */
-    1000000 / IR_FREQUENCY,                                                   /* 38kHz PWM period.       */
+    1000000,                        /* 1mHz PWM clock frequency.   */
+    1000000 / IR_FREQUENCY,         /* 38kHz PWM period.       */
     pwmCbPeriodIrLed,
     {
         {PWM_OUTPUT_DISABLED, NULL},
@@ -79,13 +94,12 @@ void irLedsInit(void)
         ir_led_t led = irLeds[i];
 
         // Setup pin as PWM
-        palSetPadMode(led.port, led.pad, PAL_MODE_ALTERNATE(led.pwm_afun));
+        // palSetPadMode(led.port, led.pad, PAL_MODE_ALTERNATE(led.pwm_afun));
 
         // Set pulse width to 0 initially
         pwmEnableChannel(led.pwm_driver, led.pwm_channel, PWM_PERCENTAGE_TO_WIDTH(led.pwm_driver, 5000));
 
     }
-
 
     chThdCreateStatic(waLedThread, sizeof(waLedThread), NORMALPRIO, LedThread, NULL);
 }

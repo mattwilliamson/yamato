@@ -18,6 +18,6 @@ typedef struct {
 
 typedef uint8_t ir_index_t;
 
-void irInit(void);
+void irLedsInit(void);
 
 #endif
