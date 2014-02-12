@@ -27,6 +27,35 @@
 #include "telemetry.h"
 
 
+void sharedPwmInit(void) {
+    /* 
+    We will use PWM3 (TIM3) for both the IR LEDs and the motors.
+    The motors only need 2 PWM lines and the IR will use the callback
+    to blink LEDs in a rotating fashion.
+    */
+    static PWMConfig pwmConfig = {
+        PWM_FREQUENCY,                      /* 1mHz PWM clock frequency. */
+        PWM_FREQUENCY / IR_FREQUENCY,       /* 38kHz PWM period.         */
+        pwmCbPeriodIrLedClear,              /* Turns current LED off     */
+        {
+            /* Callback to turn current LED on */
+            {PWM_OUTPUT_ACTIVE_HIGH, pwmCbActiveIrLedPulse},
+
+            /* Unassigned */
+            {PWM_OUTPUT_DISABLED, NULL},
+
+            /* Motors */
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL},
+            {PWM_OUTPUT_ACTIVE_HIGH, NULL}
+        },
+        0,
+        0
+    };
+
+    /* Start the driver */
+    pwmStart(&PWM_SHARED, &pwmConfig);
+}
+
 
 
 /*
@@ -45,14 +74,26 @@ int main(void)
     halInit();
     chSysInit();
 
-    // LEDs for debugging and such
+    /* LEDs for debugging and such */
     palSetPadMode(GPIOC, GPIOC_LED3, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(GPIOC, GPIOC_LED4, PAL_MODE_OUTPUT_PUSHPULL);
 
+    /* Start PWM Driver shared by motors and IR LEFDs */
+    sharedPwmInit();
+
+    /* Start serial shell */
     telemetryInit();
+
+    /* Start up ultrasonic rangefinder */
     sonarInit();
+
+    /* Motors */
     motorsInit();
+
+    /* IR prximity sensors */
     irLedsInit();
+
+    /* PHotoresistor/LDR black/white line detector */
     lineInit();
 
     /*

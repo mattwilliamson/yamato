@@ -58,7 +58,7 @@ static msg_t SonarThread(void *arg)
         chThdSleepMilliseconds(2000);
     }
 
-    return 1;
+    return 0;
 }
 
 unsigned long sonarLastDistance(void)

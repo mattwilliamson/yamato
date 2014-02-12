@@ -14,7 +14,7 @@ Left and right Motors
 motor_t const motors[] = {
     /* Left - pwm timer 3 channel 3 */
     {
-        &PWMD3, 2, 1,
+        &PWM_SHARED, 2, 1,
         GPIOB, GPIOB_PIN0, 
         GPIOC, GPIOC_PIN6, 
         GPIOB, GPIOB_PIN2
@@ -22,7 +22,7 @@ motor_t const motors[] = {
 
     /* Right - pwm timer 3 channel 4 */
     {
-        &PWMD3, 3, 1, 
+        &PWM_SHARED, 3, 1, 
         GPIOB, GPIOB_PIN1, 
         GPIOB, GPIOB_PIN15, 
         GPIOC, GPIOC_PIN7
@@ -31,40 +31,6 @@ motor_t const motors[] = {
 
 const uint8_t motorCount = sizeof(motors) / sizeof(motor_t);
 
-
-static void pwmCbPeriodMotor(PWMDriver *pwmp) {
-  (void)pwmp;
-
-  // palClearPad(GPIOC, GPIOC_LED4);
-  // palClearPad(GPIOC, GPIOC_LED3);
-}
-
-static void pwmCbActiveMotorLeft(PWMDriver *pwmp) {
-  (void)pwmp;
-  // Blue
-  // palSetPad(GPIOC, GPIOC_LED4);
-}
-
-static void pwmCbActiveMotorRight(PWMDriver *pwmp) {
-  (void)pwmp;
-  // Green
-  // palSetPad(GPIOC, GPIOC_LED3);
-}
-
-
-static PWMConfig pwmConfig = {
-    10000,                                    /* 10kHz PWM clock frequency.   */
-    100,                                        /* Initial PWM period.       */
-    pwmCbPeriodMotor,
-    {
-        {PWM_OUTPUT_DISABLED, NULL},
-        {PWM_OUTPUT_DISABLED, NULL},
-        {PWM_OUTPUT_ACTIVE_HIGH, pwmCbActiveMotorLeft},
-        {PWM_OUTPUT_ACTIVE_HIGH, pwmCbActiveMotorRight}
-    },
-    0,
-    0
-};
 
 static WORKING_AREA(waDriveThread, 128);
 static msg_t DriveThread(void *arg)
@@ -76,13 +42,11 @@ static msg_t DriveThread(void *arg)
         chThdSleepMilliseconds(1000);
     }
 
-    return 1;
+    return 0;
 }
 
 void motorsInit()
 {
-    pwmStart(&PWMD3, &pwmConfig);
-
     // Set all pins for motors to output and initialize LOW
     uint8_t i;
 

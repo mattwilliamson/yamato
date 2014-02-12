@@ -9,9 +9,6 @@
 #define IR_FREQUENCY 38000
 
 typedef struct {
-    PWMDriver     *pwm_driver;
-    pwmchannel_t  pwm_channel;
-    uint16_t      pwm_afun;
     ioportid_t    port;
     uint16_t      pad;
 } ir_led_t;
@@ -19,5 +16,8 @@ typedef struct {
 typedef uint8_t ir_index_t;
 
 void irLedsInit(void);
+
+void pwmCbPeriodIrLedClear(PWMDriver *pwmp);
+void pwmCbActiveIrLedPulse(PWMDriver *pwmp);
 
 #endif

@@ -10,5 +10,10 @@
 #define TELEMETRY_SERIAL SD1
 #define TELEMETRY_STREAM (BaseSequentialStream *)&TELEMETRY_SERIAL
 
+/* Frequency for Motor and IR PWM */
+#define PWM_FREQUENCY 1000000
+#define PWM_SHARED PWMD3
+#define PWM_SHARED_IR_CHANNEL 1
+
 
 #endif
