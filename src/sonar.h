@@ -1,11 +1,8 @@
-#ifndef _SONAR_H_
-#define _SONAR_H_
+#pragma once
 
 #include "yamato.h"
 
 #define US_TO_CM(microseconds) microseconds / 58.0
-
-#endif
 
 unsigned long sonarLastDistance(void);
 void sonarInit(void);

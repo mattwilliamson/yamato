@@ -8,21 +8,21 @@ volatile unsigned long distance;
 static void icuCbPulseWidth(ICUDriver *icup)
 {
     lastPulseWidth = icuGetWidth(icup);
-    distance = US_TO_CM(lastPulseWidth * SONAR_PRECISION);
+    distance = US_TO_CM(lastPulseWidth);
     // chprintf(TELEMETRY_STREAM, "Pong: %D\r\n", distance);
     icuDisable(&ICUD1);
     icuStop(&ICUD1);
 }
 
-static void icuCbPeriod(ICUDriver *icup)
-{
-    last_period = icuGetPeriod(icup);
-}
+// static void icuCbPeriod(ICUDriver *icup)
+// {
+//     last_period = icuGetPeriod(icup);
+// }
 
-static void icuCbOverflow(ICUDriver *icup)
-{
-    (void)icup;
-}
+// static void icuCbOverflow(ICUDriver *icup)
+// {
+//     (void)icup;
+// }
 
 static WORKING_AREA(waSonarThread, 128);
 static msg_t SonarThread(void *arg)
@@ -34,10 +34,10 @@ static msg_t SonarThread(void *arg)
     // Input Capture Unit - read pulse in
     ICUConfig icucfg = {
         ICU_INPUT_ACTIVE_HIGH,
-        1000000 / SONAR_PRECISION,
+        1000000,
         icuCbPulseWidth,
-        icuCbPeriod,
-        icuCbOverflow,
+        NULL, // icuCbPeriod,
+        NULL, // icuCbOverflow,
         ICU_CHANNEL_1,
         0
     };
@@ -46,7 +46,7 @@ static msg_t SonarThread(void *arg)
     palSetPadMode(GPIOA, GPIOA_PIN8, PAL_MODE_ALTERNATE(2));
 
     while (TRUE) {
-        // Trigger, min. 10us for HC-SRF05
+        // Trigger, min. 10us minimum for HC-SRF05
         palSetPad(GPIOA, GPIOA_PIN11);
         chThdSleepMicroseconds(20);
         palClearPad(GPIOA, GPIOA_PIN11);

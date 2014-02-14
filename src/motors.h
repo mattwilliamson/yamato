@@ -1,5 +1,4 @@
-#ifndef _MOTORS_H_
-#define _MOTORS_H_
+#pragma once
 
 #include "yamato.h"
 
@@ -30,5 +29,3 @@ typedef uint8_t motor_speed_t;
 
 void motorsInit(void);
 void setMotor(uint8_t motor, motor_direction_t direction, motor_speed_t speed);
-
-#endif

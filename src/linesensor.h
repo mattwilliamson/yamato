@@ -1,5 +1,4 @@
-#ifndef _LINESENSOR_H_
-#define _LINESENSOR_H_
+#pragma once
 
 #include "yamato.h"
 
@@ -9,8 +8,6 @@
 #define LINE_CHANNEL_VREF 3
 
 typedef size_t line_channel_t;
-
-#endif
 
 void lineInit(void);
 adcsample_t lineAvg(line_channel_t channel);

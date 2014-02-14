@@ -43,6 +43,7 @@ _ '---------------' _
 
 */
 
+/* Called when the PWM period is reached */
 static void pwmCbPeriodIrLedClear(PWMDriver *pwmp)
 {
     (void)pwmp;
@@ -52,6 +53,7 @@ static void pwmCbPeriodIrLedClear(PWMDriver *pwmp)
     // palSetPad(GPIOC, GPIOC_LED4);
 }
 
+/* Called when the PWM is active */
 static void pwmCbActiveIrLedPulse(PWMDriver *pwmp)
 {
     (void)pwmp;
@@ -61,6 +63,7 @@ static void pwmCbActiveIrLedPulse(PWMDriver *pwmp)
     // palClearPad(GPIOC, GPIOC_LED4);
 }
 
+/* Turn an LED on or off */
 void setIrLed(ir_index_t irLed, uint16_t dutyCycle)
 {
     if(irLed < irLedCount) {
@@ -72,6 +75,7 @@ void setIrLed(ir_index_t irLed, uint16_t dutyCycle)
     }
 }
 
+/* Simple thread that loops and rotates which LED is on */
 static WORKING_AREA(waLedThread, 128);
 static msg_t LedThread(void *arg)
 {
@@ -94,14 +98,17 @@ static msg_t LedThread(void *arg)
     return 0;
 }
 
+/* Sets up PWM for the IR LEDs */
 void irLedsInit(void)
 {
+    // Turn off all LEDs
     ir_index_t i;
 
     for (i = 0; i < irLedCount; i++) {
         setIrLed(i, 0);
     }
 
+    // Get the global shared PWM
     PWMChannelConfig *channelConfig = &pwmSharedConfig.channels[PWM_SHARED_IR_CHANNEL];
 
     // Set channel mode for PWM
@@ -123,6 +130,7 @@ void irLedsInit(void)
     chThdCreateStatic(waLedThread, sizeof(waLedThread), NORMALPRIO, LedThread, NULL);
 }
 
+/* Called when the IR RX signal pin goes low */
 static void extCbIrLedSignal(EXTDriver *extp, expchannel_t channel)
 {
     (void)extp;
@@ -135,6 +143,7 @@ static void extCbIrLedSignal(EXTDriver *extp, expchannel_t channel)
     }
 }
 
+/* Add callbacks for each IR RX pin */
 void irRxsInit(void)
 {
     ir_index_t i;
@@ -152,6 +161,7 @@ void irRxsInit(void)
     }
 }
 
+/* Initialize IR LEDs and receivers */
 void irInit(void)
 {
     irLedsInit();

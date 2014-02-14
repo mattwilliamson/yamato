@@ -1,8 +1,4 @@
-#ifndef _IR_H_
-#define _IR_H_
-
-#include "ch.h"
-#include "hal.h"
+#pragma once
 
 #include "yamato.h"
 
@@ -23,5 +19,3 @@ typedef struct {
 typedef uint8_t ir_index_t;
 
 void irInit(void);
-
-#endif
