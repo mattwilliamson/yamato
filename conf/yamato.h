@@ -1,6 +1,11 @@
 #ifndef _YAMATO_H_
 #define _YAMATO_H_
 
+#include "ch.h"
+#include "hal.h"
+#include "chprintf.h"
+#include "chrtclib.h"
+
 #define SONAR_ICU ICUD1
 
 /* Sonar precision in microseconds */
@@ -13,7 +18,10 @@
 /* Frequency for Motor and IR PWM */
 #define PWM_FREQUENCY 1000000
 #define PWM_SHARED PWMD3
-#define PWM_SHARED_IR_CHANNEL 1
+
+#define IR_FREQUENCY 38000
+#define IR_RX_PORT GPIOC
+#define IR_RX_EXT_MODE EXT_CH_MODE_FALLING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOC
 
 
 #endif

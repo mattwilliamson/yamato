@@ -64,6 +64,9 @@ void motorsInit()
         palClearPad(m.fwd_port, m.fwd_pad);
         palClearPad(m.rev_port, m.rev_pad);
 
+        // Set channel mode
+        pwmSharedConfig.channels[m.pwm_channel].mode = PWM_OUTPUT_ACTIVE_HIGH;
+
         // Set pulse width to 0 initially
         pwmEnableChannel(m.pwm_driver, m.pwm_channel, PWM_PERCENTAGE_TO_WIDTH(m.pwm_driver, 0));
     }

@@ -27,35 +27,57 @@
 #include "telemetry.h"
 
 
-void sharedPwmInit(void) {
-    /* 
-    We will use PWM3 (TIM3) for both the IR LEDs and the motors.
-    The motors only need 2 PWM lines and the IR will use the callback
-    to blink LEDs in a rotating fashion.
-    */
-    static PWMConfig pwmConfig = {
-        PWM_FREQUENCY,                      /* 1mHz PWM clock frequency. */
-        PWM_FREQUENCY / IR_FREQUENCY,       /* 38kHz PWM period.         */
-        pwmCbPeriodIrLedClear,              /* Turns current LED off     */
-        {
-            /* Callback to turn current LED on */
-            {PWM_OUTPUT_ACTIVE_HIGH, pwmCbActiveIrLedPulse},
+/* 
+We will use PWM3 (TIM3) for both the IR LEDs and the motors.
+The motors only need 2 PWM lines and the IR will use the callback
+to blink LEDs in a rotating fashion.
+*/
+PWMConfig pwmSharedConfig = {
+    PWM_FREQUENCY,
+    10000,
+    NULL,
+    {
+        // Dfaults
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL}
+    },
+    0,
+    0
+};
 
-            /* Unassigned */
-            {PWM_OUTPUT_DISABLED, NULL},
-
-            /* Motors */
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL},
-            {PWM_OUTPUT_ACTIVE_HIGH, NULL}
-        },
-        0,
-        0
-    };
-
-    /* Start the driver */
-    pwmStart(&PWM_SHARED, &pwmConfig);
-}
-
+/*
+External interrupt callbacks
+Currently just used for IR receivers.
+*/
+EXTConfig extSharedConfig = {
+  {
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_DISABLED, NULL}
+  }
+};
 
 
 /*
@@ -78,9 +100,6 @@ int main(void)
     palSetPadMode(GPIOC, GPIOC_LED3, PAL_MODE_OUTPUT_PUSHPULL);
     palSetPadMode(GPIOC, GPIOC_LED4, PAL_MODE_OUTPUT_PUSHPULL);
 
-    /* Start PWM Driver shared by motors and IR LEFDs */
-    sharedPwmInit();
-
     /* Start serial shell */
     telemetryInit();
 
@@ -91,10 +110,16 @@ int main(void)
     motorsInit();
 
     /* IR prximity sensors */
-    irLedsInit();
+    irInit();
 
     /* PHotoresistor/LDR black/white line detector */
     lineInit();
+
+    /* Start PWM Driver shared by motors and IR LEDs */
+    pwmStart(&PWM_SHARED, &pwmSharedConfig);
+
+    /* Start EXT Driver used by IR receivers */
+    extStart(&EXTD1, &extSharedConfig);
 
     /*
      * Normal main() thread activity, in this demo it does nothing except

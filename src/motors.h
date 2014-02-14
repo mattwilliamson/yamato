@@ -1,12 +1,9 @@
 #ifndef _MOTORS_H_
 #define _MOTORS_H_
 
-#include "ch.h"
-#include "hal.h"
-#include "chprintf.h"
-#include "chrtclib.h"
-
 #include "yamato.h"
+
+extern PWMConfig pwmSharedConfig;
 
 typedef struct {
 	PWMDriver     *pwm_driver;

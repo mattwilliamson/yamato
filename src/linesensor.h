@@ -1,11 +1,6 @@
 #ifndef _LINESENSOR_H_
 #define _LINESENSOR_H_
 
-#include "ch.h"
-#include "hal.h"
-#include "chprintf.h"
-#include "chrtclib.h"
-
 #include "yamato.h"
 
 #define LINE_CHANNEL_LEFT 0
