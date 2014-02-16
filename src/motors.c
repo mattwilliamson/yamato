@@ -11,7 +11,7 @@ PB15
 
 Left and right Motors
 */
-motor_t const motors[] = {
+static motor_t const motors[] = {
     /* Left - pwm timer 3 channel 3 */
     {
         &PWM_SHARED, 2, 1,
@@ -29,9 +29,6 @@ motor_t const motors[] = {
     }
 };
 
-const uint8_t motorCount = sizeof(motors) / sizeof(motor_t);
-
-
 static WORKING_AREA(waDriveThread, 128);
 static msg_t DriveThread(void *arg)
 {
@@ -42,7 +39,7 @@ static msg_t DriveThread(void *arg)
         chThdSleepMilliseconds(1000);
     }
 
-    return 0;
+    return 1;
 }
 
 void motorsInit()
@@ -50,7 +47,7 @@ void motorsInit()
     // Set all pins for motors to output and initialize LOW
     uint8_t i;
 
-    for (i=0; i < motorCount; i++) {
+    for (i=0; i < MOTOR_COUNT; i++) {
         motor_t m = motors[i];
 
         // Setup pin as PWM
@@ -76,7 +73,7 @@ void motorsInit()
 }
 
 void setMotor(motor_index_t motor, motor_direction_t direction, motor_speed_t speed) {
-    if(motor >= motorCount) {
+    if(motor >= MOTOR_COUNT) {
         return;
     }
 
@@ -84,11 +81,11 @@ void setMotor(motor_index_t motor, motor_direction_t direction, motor_speed_t sp
     motor_t m = motors[motor];
 
     switch(direction) {
-        case MOTOR_DIR_FORWARD:
+        case motor_forward:
             palSetPad(m.fwd_port, m.fwd_pad);
             palClearPad(m.rev_port, m.rev_pad);
             break;
-        case MOTOR_DIR_REVERSE:
+        case motor_reverse:
             palClearPad(m.fwd_port, m.fwd_pad);
             palSetPad(m.rev_port, m.rev_pad);
             break;

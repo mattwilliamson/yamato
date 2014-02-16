@@ -21,10 +21,16 @@
 
 #include "yamato.h"
 #include "motors.h"
-#include "ir.h"
-#include "sonar.h"
-#include "linesensor.h"
+#include "sensors.h"
 #include "telemetry.h"
+
+#if YAMATO_MODE == YAMATO_MODE_SUMO
+    #include "sumo.h"
+#elif YAMATO_MODE == YAMATO_MODE_AVOIDANCE
+    #error "YAMATO_MODE_AVOIDANCE not yet implemented"
+#else
+    #error "No YAMATO_MODE set"
+#endif
 
 
 /* 
@@ -79,7 +85,6 @@ EXTConfig extSharedConfig = {
   }
 };
 
-
 /*
  * Application entry point.
  */
@@ -103,23 +108,22 @@ int main(void)
     /* Start serial shell */
     telemetryInit();
 
-    /* Start up ultrasonic rangefinder */
-    sonarInit();
+    /* Set up sensors */
+    sensorsInit();
 
     /* Motors */
     motorsInit();
-
-    /* IR prximity sensors */
-    irInit();
-
-    /* PHotoresistor/LDR black/white line detector */
-    lineInit();
 
     /* Start PWM Driver shared by motors and IR LEDs */
     pwmStart(&PWM_SHARED, &pwmSharedConfig);
 
     /* Start EXT Driver used by IR receivers */
     extStart(&EXTD1, &extSharedConfig);
+
+    /* Start the high level logic */
+    #if YAMATO_MODE == YAMATO_MODE_SUMO
+        sumoStart();
+    #endif
 
     /*
      * Normal main() thread activity, in this demo it does nothing except
@@ -129,12 +133,10 @@ int main(void)
      */
 
     while (TRUE) {
-        while (!palReadPad(GPIOA, GPIOA_BUTTON)) {
-            chThdSleepMilliseconds(10);
-        }
-
+        chThdSleepMilliseconds(1000);
     }
 
+    return 1;
 }
 
 

@@ -15,8 +15,6 @@ static void cmdLineSensor(BaseSequentialStream *chp, int argc, char *argv[])
 
     chprintf(chp, "LINE_CHANNEL_LEFT: %D\r\n", lineAvg(LINE_CHANNEL_LEFT));
     chprintf(chp, "LINE_CHANNEL_RIGHT: %D\r\n", lineAvg(LINE_CHANNEL_RIGHT));
-    chprintf(chp, "LINE_CHANNEL_TEMP: %D\r\n", lineAvg(LINE_CHANNEL_TEMP));
-    chprintf(chp, "LINE_CHANNEL_VREF: %D\r\n", lineAvg(LINE_CHANNEL_VREF));
 }
 
 static void cmdMemory(BaseSequentialStream *chp, int argc, char *argv[])
@@ -45,12 +43,12 @@ static void cmdMotor(BaseSequentialStream *chp, int argc, char *argv[])
 
     if (argc > 0) {
         if (strcmp(argv[0], "on") == 0) {
-            setMotor(MOTOR_LEFT, MOTOR_DIR_FORWARD, 100);
-            setMotor(MOTOR_RIGHT, MOTOR_DIR_FORWARD, 100);
+            setMotor(MOTOR_LEFT, motor_forward, 100);
+            setMotor(MOTOR_RIGHT, motor_forward, 100);
             return;
         } else if (strcmp(argv[0], "off") == 0) {
-            setMotor(MOTOR_LEFT, MOTOR_DIR_STOP, 0);
-            setMotor(MOTOR_RIGHT, MOTOR_DIR_STOP, 0);
+            setMotor(MOTOR_LEFT, motor_stop, 0);
+            setMotor(MOTOR_RIGHT, motor_stop, 0);
             return;
         } else if ((argc > 1)) {
             motor = atoi(argv[0]);
@@ -58,13 +56,13 @@ static void cmdMotor(BaseSequentialStream *chp, int argc, char *argv[])
 
             switch (argv[1][0]) {
                 case 'f':
-                    direction = MOTOR_DIR_FORWARD;
+                    direction = motor_forward;
                     break;
                 case 'r':
-                    direction = MOTOR_DIR_REVERSE;
+                    direction = motor_reverse;
                     break;
                 default:
-                    direction = MOTOR_DIR_STOP;
+                    direction = motor_stop;
             }
 
             if (argc > 2) {
@@ -99,13 +97,13 @@ static const ShellCommand commands[] = {
     {NULL, NULL}
 };
 
-static const ShellConfig shell_cfg1 = {
+static const ShellConfig shellConfig = {
     TELEMETRY_STREAM,
     commands
 };
 
-static SerialConfig ser_cfg = {
-    38400,
+static SerialConfig serialConfig = {
+    TELEMETRY_BITRATE,
     0,
     0,
     0,
@@ -113,19 +111,15 @@ static SerialConfig ser_cfg = {
 
 void telemetryInit()
 {
-    /*
-     * Activates the serial driver 1 using the driver default configuration.
-     * PA9 and PA10 are routed to USART1.
-     */
-    sdStart(&TELEMETRY_SERIAL, &ser_cfg);
-    palSetPadMode(GPIOA, 9, PAL_MODE_ALTERNATE(1));         /* USART1 TX.         */
-    palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(1));        /* USART1 RX.         */
+    /* Initialize serial */
+    sdStart(&TELEMETRY_SERIAL, &serialConfig);
+    TELEMETRY_ALTERNATE_FUNCTION()
 
+    /* Start up the interactive shell */
     shellInit();
 
     chprintf(TELEMETRY_STREAM, "Telemetry Initialized!\r\n");
-    chprintf(TELEMETRY_STREAM, "Hello.\r\n");
 
     static WORKING_AREA(waShell, 1024);
-    shellCreateStatic(&shell_cfg1, waShell, sizeof(waShell), NORMALPRIO);
+    shellCreateStatic(&shellConfig, waShell, sizeof(waShell), NORMALPRIO);
 }

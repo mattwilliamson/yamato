@@ -1,69 +1,105 @@
+/**
+ * @file    sonar.c
+ * @brief   Ultrasonic rangefinder SRF04 and SRF05
+ */
+
 #include "sonar.h"
 
-volatile icucnt_t lastPulseWidth, last_period;
-volatile unsigned long distance;
+static sonar_state_t sonarState = SONAR_INIT;
+static icucnt_t lastPulseWidth;
 
-// ICU to read how long it takes for the Sonar to echo
-
+/**
+ * @brief Input Capture Unit callback
+ * @details Read how long it takes for the Sonar to echo back a ping
+ * 
+ * @param icup ICU driver callback was setup with
+ */
 static void icuCbPulseWidth(ICUDriver *icup)
 {
+    chSysLockFromIsr();
+    sonarState = SONAR_READY;
     lastPulseWidth = icuGetWidth(icup);
-    distance = US_TO_CM(lastPulseWidth);
-    // chprintf(TELEMETRY_STREAM, "Pong: %D\r\n", distance);
+    chEvtBroadcastFlagsI(&esSensorEvents, sensor_event_sonar_pong);
     icuDisable(&ICUD1);
     icuStop(&ICUD1);
+    chSysUnlockFromIsr();
 }
 
-// static void icuCbPeriod(ICUDriver *icup)
-// {
-//     last_period = icuGetPeriod(icup);
-// }
+/**
+ * @brief Input Capture Unit configuration
+ */
+ICUConfig icucfg = {
+    ICU_INPUT_ACTIVE_HIGH,
+    1000000,
+    icuCbPulseWidth,
+    NULL, // icuCbPeriod,
+    NULL, // icuCbOverflow,
+    ICU_CHANNEL_1,
+    0
+};
 
-// static void icuCbOverflow(ICUDriver *icup)
-// {
-//     (void)icup;
-// }
+/**
+ * @brief Gets the last distance detected.
+ * @return Distance in CM or 0 if not detected.
+ */
+unsigned long sonarLastDistance(void)
+{
+    if (lastPulseWidth > SONAR_MAX_RANGE_US) {
+        return US_TO_CM(lastPulseWidth);
+    } else {
+        /* Nothing detected */
+        return 0;
+    }
+}
 
+
+/**
+ * @brief Starts sonar ping to measure distance.
+ * @details Starts ping when it receives the @p sensor_event_sonar_ping 
+ * from the @p esSensorEvents @p EventSource and upon calulation of distance, 
+ * broadcasts @p sensor_event_sonar_pong to the @p esSensorEvents 
+ * @p EventSource.
+ */
 static WORKING_AREA(waSonarThread, 128);
 static msg_t SonarThread(void *arg)
 {
-
     (void)arg;
+
+    EventListener el;
     chRegSetThreadName("sonar");
+    chEvtRegisterMask(&esSensorEvents , &el , sensor_event_sonar_ping);
 
-    // Input Capture Unit - read pulse in
-    ICUConfig icucfg = {
-        ICU_INPUT_ACTIVE_HIGH,
-        1000000,
-        icuCbPulseWidth,
-        NULL, // icuCbPeriod,
-        NULL, // icuCbOverflow,
-        ICU_CHANNEL_1,
-        0
-    };
+    while(TRUE) {
+        // Wait for the event to start pinging
+        chEvtWaitOne(sensor_event_sonar_ping);
 
-    palSetPadMode(GPIOA, GPIOA_PIN11, PAL_MODE_OUTPUT_PUSHPULL);
-    palSetPadMode(GPIOA, GPIOA_PIN8, PAL_MODE_ALTERNATE(2));
+        if(sonarState != SONAR_BUSY) {
+            sonarState = SONAR_BUSY;
+            palSetPadMode(GPIOA, GPIOA_PIN11, PAL_MODE_OUTPUT_PUSHPULL);
+            palSetPadMode(GPIOA, GPIOA_PIN8, PAL_MODE_ALTERNATE(2));
 
-    while (TRUE) {
-        // Trigger, min. 10us minimum for HC-SRF05
-        palSetPad(GPIOA, GPIOA_PIN11);
-        chThdSleepMicroseconds(20);
-        palClearPad(GPIOA, GPIOA_PIN11);
+            // Trigger, min. 10us minimum for HC-SRF05
+            palSetPad(GPIOA, GPIOA_PIN11);
+            chThdSleepMicroseconds(20);
+            palClearPad(GPIOA, GPIOA_PIN11);
 
-        // Read how long the line is high
-        icuStart(&SONAR_ICU, &icucfg);
-        icuEnable(&SONAR_ICU);
-
-        chThdSleepMilliseconds(2000);
+            // Read how long the line is high
+            icuStart(&SONAR_ICU, &icucfg);
+            icuEnable(&SONAR_ICU);
+        }
     }
 
-    return 0;
+    return 1;
 }
 
-unsigned long sonarLastDistance(void)
+void sonarStartPing(void)
 {
-    return distance;
+    chEvtBroadcastFlags(&esSensorEvents, sensor_event_sonar_ping);
+}
+
+void sonarStartPingI(void)
+{
+    chEvtBroadcastFlagsI(&esSensorEvents, sensor_event_sonar_ping);
 }
 
 void sonarInit(void)
