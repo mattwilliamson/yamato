@@ -35,7 +35,21 @@ typedef struct {
 typedef uint8_t ir_index_t;
 typedef int32_t ir_angle_t;
 
-int32_t irDetections[IR_RX_COUNT] = {0};
+static ir_t const irLeds[] = {
+    {GPIOC, GPIOC_LED4, -15 * 100},
+    {GPIOC, GPIOC_LED3,  15 * 100}
+    // {GPIOA, GPIOA_PIN3}
+};
+
+static ir_t const irRxs[] = {
+    /* PC2, 3, 4, 5 */
+    {IR_RX_PORT, 2,  -45 * 100},
+    {IR_RX_PORT, 3,   45 * 100},
+    {IR_RX_PORT, 4,  135 * 100},
+    {IR_RX_PORT, 5, -135 * 100}
+};
+
+extern ir_angle_t irDetections[IR_RX_COUNT];
 
 void irInit(void);
 

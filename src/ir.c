@@ -1,19 +1,5 @@
 #include "ir.h"
 
-static ir_t const irLeds[] = {
-    {GPIOC, GPIOC_LED4, -15 * 100},
-    {GPIOC, GPIOC_LED3,  15 * 100}
-    // {GPIOA, GPIOA_PIN3}
-};
-
-static ir_t const irRxs[] = {
-    /* PC2, 3, 4, 5 */
-    {IR_RX_PORT, 2,  -45 * 100},
-    {IR_RX_PORT, 3,   45 * 100},
-    {IR_RX_PORT, 4,  135 * 100},
-    {IR_RX_PORT, 5, -135 * 100}
-};
-
 static ir_index_t currentLedIndex = 0;
 static ir_t currentLed;
 
