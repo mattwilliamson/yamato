@@ -101,6 +101,14 @@ make
 make load  # Installs onto Discovery board
 ```
 
+```bash
+make debug
+(gdb) target remote localhost:4242
+(gdb) load
+(gdb) continue
+...
+```
+
 
 *Note: on my setup, the flash will fail the first time. Press the reset button and run `make load` again. Reset again for the MCU to start running.*
 

@@ -31,7 +31,7 @@ static void adcCbReady(ADCDriver *adcp, adcsample_t *buffer, size_t n)
 
         // Color detected changed from last reading, send an event
         if(lastColor != colorDetected[c]) {
-            chEvtBroadcastFlagsI(&esSensorEvents, sensor_event_line_change);
+            chEvtBroadcastFlagsI(&esSensorEvents, SENSOR_EVENT_LINE_CHANGE);
         }
     }
 }

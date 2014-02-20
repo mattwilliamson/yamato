@@ -13,5 +13,6 @@
 #include "sonar.h"
 #include "motors.h"
 #include "line.h"
+#include "ir.h"
 
 void telemetryInit(void);

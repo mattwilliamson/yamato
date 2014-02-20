@@ -132,11 +132,11 @@ int main(void)
      * driver 1.
      */
 
-    while (TRUE) {
+    while(!chThdShouldTerminate()) {
         chThdSleepMilliseconds(1000);
     }
 
-    return 1;
+    return 0;
 }
 
 

@@ -1,5 +1,7 @@
 #include "telemetry.h"
 
+static EventListener el;
+
 static void cmdSonar(BaseSequentialStream *chp, int argc, char *argv[])
 {
     (void)argv;
@@ -87,6 +89,34 @@ static void cmdMotor(BaseSequentialStream *chp, int argc, char *argv[])
     chprintf(chp, "and speed is percentage 0-100\r\n");
 }
 
+static void cmdIr(BaseSequentialStream *chp, int argc, char *argv[])
+{
+    (void)argv;
+    (void)argc;
+
+    chEvtRegisterMask(&esSensorEvents , &el, SENSOR_EVENT_IR_END);
+
+    chprintf(chp, "Pinging with IR...\r\n");
+
+    chEvtBroadcastFlags(&esSensorEvents, SENSOR_EVENT_IR_START);
+    chEvtWaitOne(SENSOR_EVENT_IR_END);
+
+    chThdSleepMilliseconds(50);
+
+    ir_index_t i;
+    ir_angle_t angle;
+
+    chSysLock();
+    for (i = 0; i < IR_RX_COUNT; i++) {
+        angle = irDetections[i];
+
+        chprintf(chp, "IR Angle: %D\r\n", angle);
+    }
+    chSysUnlock();
+
+    chEvtUnregister(&esSensorEvents, &el);
+}
+
 static const ShellCommand commands[] = {
     {"sonar", cmdSonar},
     {"memory", cmdMemory},
@@ -94,6 +124,7 @@ static const ShellCommand commands[] = {
     {"m", cmdMotor},
     {"line", cmdLineSensor},
     {"l", cmdLineSensor},
+    {"ir", cmdIr},
     {NULL, NULL}
 };
 

@@ -215,3 +215,10 @@ include $(CHIBIOS)/os/ports/GCC/ARMCMx/rules.mk
 
 load: $(CODE_DIR)
 	st-flash write build/$(PROJECT).bin 0x08000000
+
+debug: $(CODE_DIR)
+	st-util usb &
+	arm-none-eabi-gdb build/yamato.elf -tui
+
+serial: $(CODE_DIR)
+	screen /dev/tty.MattYamato-DevB 38400

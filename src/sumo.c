@@ -10,11 +10,11 @@ static msg_t SumoThread(void *arg)
 
     sumoState = SUMO_SLEEP;
 
-    while (TRUE) {
+    while(!chThdShouldTerminate()) {
         chThdSleepMilliseconds(1000);
     }
 
-    return 1;
+    return 0;
 }
 
 void sumoStart(void) {

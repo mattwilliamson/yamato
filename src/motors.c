@@ -35,11 +35,11 @@ static msg_t DriveThread(void *arg)
     (void)arg;
     chRegSetThreadName("drive");
 
-    while (TRUE) {
+    while(!chThdShouldTerminate()) {
         chThdSleepMilliseconds(1000);
     }
 
-    return 1;
+    return 0;
 }
 
 void motorsInit()

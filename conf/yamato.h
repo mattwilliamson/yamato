@@ -15,16 +15,20 @@
 /**
  * @brief Sensor event masks
  */
-typedef enum {
-    sensor_event_line_change = 1,
-    sensor_event_sonar_ping = 2,
-    sensor_event_sonar_pong = 4,
-    sensor_event_ir_start = 8,
-    sensor_event_ir_done = 16
-} sensor_event_t;
+#define SENSOR_EVENT_LINE_CHANGE    1
+#define SENSOR_EVENT_SONAR_START    2
+#define SENSOR_EVENT_SONAR_END      4
+#define SENSOR_EVENT_IR_START       8
+#define SENSOR_EVENT_IR_END         16
 
 /* Event source used for all sensors to notify they have a reading */
 extern EventSource esSensorEvents;
+
+/* PWM Config shared among motors and IR LEDs */
+extern PWMConfig pwmSharedConfig;
+
+/* PWM Config shared among IR RXs and potentially rotary encoders */
+extern EXTConfig extSharedConfig;
 
 /* Telemetry
  * Activates the serial driver 1 using the driver default configuration.
